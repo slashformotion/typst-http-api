@@ -1,0 +1,43 @@
+
+<html>
+    <head>
+        <title>Something went wrong :-(</title>
+        <link href="https://www.pythonanywhere.com/static/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen" type="text/css">
+        <style>
+            body {
+                font-family: Helvetica, Arial, sans-serif;
+                width: 500px;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 20px;
+            }
+
+            iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="main">
+        <div class="banner">
+            <h1>Something went wrong :-(</h1>
+
+            <p>
+            Something went wrong while trying to load this website;
+            please try again later.
+            </p>
+
+            <p>
+            If it is your site, you should check your logs
+            to determine what the problem is.
+            </p>
+
+        </div>
+        </div>
+        <iframe name="error-insert" src="//www.pythonanywhere.com/error_insert/slashformotion.pythonanywhere.com">
+        </iframe>
+    </body>
+</html>
