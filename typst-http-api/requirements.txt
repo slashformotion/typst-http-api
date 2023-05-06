@@ -1,2 +1,3 @@
 typst==0.3.0
 flask==2.3.2
+gunicorn
