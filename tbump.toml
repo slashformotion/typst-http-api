@@ -8,7 +8,7 @@ current = "v0.0.0"
 # Make sure this matches current_version before
 # using tbump
 regex = '''
-  (?P<major>\d+)
+  v(?P<major>\d+)
   \.
   (?P<minor>\d+)
   \.
@@ -23,7 +23,7 @@ tag_template = "v{new_version}"
 # section containing the path of the file, relative to the
 # tbump.toml location.
 [[file]]
-src = "..."
+src = "README.md"
 
 # You can specify a list of commands to
 # run after the files have been patched

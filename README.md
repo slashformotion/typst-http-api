@@ -16,6 +16,8 @@ I want to bring some elements to you attention:
 - All contributions are welcome are of course welcome.
 - Currently there is no way to compile a file that load external ressources (images or other `.typ` files for example).
 
+Current version: v0.0.0
+
 ## Build and run
 
 Build the docker image
