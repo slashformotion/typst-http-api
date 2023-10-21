@@ -36,7 +36,7 @@ docker run -p 8000:8000  typst_image
 Send `test.typ` to the api and output the file to `result.pdf`:
 
 ```shell
-curl -H "Content-Type:text/plain" --data-binary @test.typ  http://localhost:5000 --output result.pdf
+curl -H "Content-Type:text/plain" --data-binary @test.typ  http://localhost:8000 --output result.pdf
 ```
 
 Or more simply using [httpie](https://httpie.io/cli):
