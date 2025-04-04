@@ -1,42 +1,43 @@
+from __future__ import annotations
+
 import typst
-import tempfile
-import pathlib
-import os
+from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 import logging
-from flask import Flask, request, jsonify, make_response
 
-app = Flask("typst-http-api")
+from prometheus_fastapi_instrumentator import Instrumentator
 
-# set logging level
-gunicorn_logger = logging.getLogger("gunicorn.error")
-app.logger.handlers = gunicorn_logger.handlers
-app.logger.setLevel(gunicorn_logger.level)
+DEFAULT_CHUNK_SIZE = 1024
+
+app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-@app.route("/", methods=["POST"])
-def build():
-    typst_bytes = request.get_data()
-    temporary_file = tempfile.NamedTemporaryFile(
-        mode="w+b", suffix=".typ", prefix=os.path.basename(__file__)
-    )
-    with open(temporary_file.name, mode="w+b") as f:
-        f.write(typst_bytes)
+class CompilationError(BaseModel):
+    reason: str
+    content: str
+
+
+@app.post("/")
+async def build(req: Request, response: Response):
+    typst_bytes = await req.body()
+
     try:
-        pdf_bytes = typst.compile(pathlib.Path(temporary_file.name))
+        res = typst.compile(typst_bytes)
     except RuntimeError as e:
-        error_stringified = str(e).replace("\n", " ")
-        resp = make_response(jsonify({"error": error_stringified}), 422)
-        resp.headers["Content-Type"] = "application/json"
-        app.logger.info(
-            f"Failed to build {len(typst_bytes)} typst markup bytes: {error_stringified} "
-        )
-        return resp
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        return CompilationError(reason="Compilation error", content=str(e))
 
-    app.logger.info(
-        f"Successfully built {len(pdf_bytes)} pdf bytes from {len(typst_bytes)} typst markup bytes"
-    )
-    return pdf_bytes, 200
+    def iterfile(
+        input_bytes: bytes,
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
+    ):
+        for i in range(0, len(input_bytes), chunk_size):
+            yield input_bytes[i : i + chunk_size]
 
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+    return StreamingResponse(iterfile(res), media_type="application/pdf")

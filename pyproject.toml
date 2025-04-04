@@ -1,0 +1,15 @@
+[project]
+name = "typst-as-a-service"
+version = "0.1.0"
+description = "Typst as a service."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "prometheus-fastapi-instrumentator>=7.1.0",
+    "pydantic>=2.11.2",
+    "typst>=0.13.2",
+]
+
+
+
