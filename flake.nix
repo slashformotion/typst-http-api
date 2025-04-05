@@ -26,6 +26,7 @@
           uv
           python3
           ruff
+          pre-commit
         ];
       };
     });

@@ -1,20 +1,26 @@
 from __future__ import annotations
 
+import logging
+
 import typst
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-import logging
-
 from prometheus_fastapi_instrumentator import Instrumentator
+from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 DEFAULT_CHUNK_SIZE = 1024
 
-app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(docs_url=None, redoc_url=None)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 Instrumentator().instrument(app).expose(app)
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -24,13 +30,16 @@ class CompilationError(BaseModel):
 
 
 @app.post("/")
-async def build(req: Request, response: Response):
-    typst_bytes = await req.body()
+@limiter.limit("6/minute")
+async def build(request: Request, response: Response):
+    typst_bytes = await request.body()
 
     try:
         res = typst.compile(typst_bytes)
+        logger.info(f"successfully build {len(typst_bytes)}")
     except RuntimeError as e:
         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        logger.error(f"failed to build {len(typst_bytes)}")
         return CompilationError(reason="Compilation error", content=str(e))
 
     def iterfile(
@@ -41,3 +50,5 @@ async def build(req: Request, response: Response):
             yield input_bytes[i : i + chunk_size]
 
     return StreamingResponse(iterfile(res), media_type="application/pdf")
+
+
