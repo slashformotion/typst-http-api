@@ -1,0 +1,16 @@
+version: "3.8"
+
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "4430:443" 
+      - "8080:80"
+    environment: 
+      - CADDY_ADMIN_DISABLED=true
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+  typst-http-api:
+    build: ... 
+    

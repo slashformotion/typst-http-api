@@ -1,0 +1,7 @@
+http://localhost {
+
+	handle  {
+		reverse_proxy typst-http-api:8000
+	}
+}
+
