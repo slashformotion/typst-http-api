@@ -29,10 +29,14 @@ FROM debian:bookworm-slim
 COPY --from=builder --chown=python:python /python /python
 
 # Copy the application from the builder
-COPY --from=builder --chown=app:app /app /app
+COPY --from=builder --chown=app:app /app/src /app/src
+COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
 # Run the FastAPI application by default
 CMD ["uvicorn", "--host", "0.0.0.0", "src:app"]
+
+LABEL ogr.opencontainer.image.url="https://github.com/slashformotion/typst-http-api/pkgs/container/typst-http-api"
+LABEL org.opencontainers.image.licenses="MIT"

@@ -9,18 +9,24 @@ from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+import os
 
 DEFAULT_CHUNK_SIZE = 1024
+REQUEST_PER_MINUTES = os.getenv("TYPST_HTTP_API_REQUESTS_PER_MINUTES")
+
+
+logger = logging.getLogger(__name__)
+
+app = FastAPI(docs_url=None, redoc_url=None)
 
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI(docs_url=None, redoc_url=None)
-app.state.limiter = limiter
+if REQUEST_PER_MINUTES is not None:
+    app.state.limiter = limiter
+
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 Instrumentator().instrument(app).expose(app)
-
-logger = logging.getLogger(__name__)
 
 
 class CompilationError(BaseModel):
@@ -29,7 +35,7 @@ class CompilationError(BaseModel):
 
 
 @app.post("/")
-@limiter.limit("6/minute")
+@limiter.limit(f"{REQUEST_PER_MINUTES}/minute")
 async def build(request: Request, response: Response):
     typst_bytes = await request.body()
 
@@ -49,5 +55,3 @@ async def build(request: Request, response: Response):
             yield input_bytes[i : i + chunk_size]
 
     return StreamingResponse(iterfile(res), media_type="application/pdf")
-
-
