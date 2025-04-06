@@ -1,0 +1,31 @@
+name: Docker Image CI for GHCR
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger only on tags matching v*
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract tag name
+        id: extract_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Log in to GHCR
+        run: docker login --username ${{ github.actor }} --password ${{ secrets.GH_PAT }} ghcr.io
+
+      - name: Build and push the image
+        run: |
+          docker build . --tag ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+          docker push ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+
+      - name: Build and push latest tag on main branch tag
+        if: github.ref == 'refs/tags/v*'
+        run: |
+          docker build . --tag ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+          docker push ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+
