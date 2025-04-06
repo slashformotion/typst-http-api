@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-
 import typst
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import StreamingResponse
