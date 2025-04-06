@@ -24,9 +24,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push latest tag on main branch tag
-        if: github.ref == 'refs/tags/v*'
-        run: |
-          docker build . --tag ghcr.io/slashformotion/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
-          docker push ghcr.io/slashformotion/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/slashformotion/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
 
