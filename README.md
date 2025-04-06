@@ -1,24 +1,57 @@
 # Typst HTTP API
 
+***Compile typst documents with a simple HTTP request.***
+
 <!-- This sentence is from the typst repo -->
 > [Typst](https://github.com/typst/typst) is a new markup-based typesetting system
 > that is designed to be as powerful as LaTeX while being much easier to learn and use.
 I recommend that you check it out if you don't know it yet.
 
 This project is a web server that allows users to compile typst markup remotely by a simple API call.
-This webserver is provided in the form of a docker container.
-*For now there is no official image on any registry.*
+This webserver is provided in the form of a docker container [`ghcr.io/slashformotion/typst-http-api` see available tags](https://github.com/slashformotion/typst-http-api/pkgs/container/typst-http-api).
 
 I want to bring some elements to your attention:
 
-- Please be aware that while the container runs,
-  I do not consider this project production-ready, more work is needed.
 - All contributions are welcome of course welcome.
 - Currently, there is no way to compile a file that loads external resources (images or other `.typ` files for example).
 
-Current version: v0.1.0
+## HTTP interface
 
-## Build and run
+This service expose two endpoints:
+
+- `POST /` : send the typst content directly to the endpoint (no Content-Type header required) and a streaming reponse will be return with the raw pdf bytes. You can find the corresponding curl command in the section [How does it work ?](#how-does-it-work-).
+  
+  If your document is not valid and an error happen at the compilation step, you will get a code 422 and a json response with the raw error[^1].
+  
+- `GET /metrics` : a traditional prometheus metrics endpoint (includes python gc data, http requests info and others).
+
+## How does it work ?
+
+Run the container:
+
+```shell
+docker run -p 8000:8000 ghcr.io/slashformotion/typst-http-api
+```
+
+Send a valid Typst file (here `test.typ`) to  the api and output the file to `result.pdf`:
+
+```shell
+curl -H "Content-Type:text/plain" -X POST --data-binary @test.typ  http://localhost:8000 --output result.pdf
+```
+
+### With docker-compose
+
+```yml
+version: "3.8"
+
+services:
+  typst-builder:
+    image: ghcr.io/slashformotion/typst-http-api:v0.3.0
+    ports:
+      - "8000:8000"
+```
+
+## Build the docker image locally
 
 Build the docker image
 
@@ -35,24 +68,4 @@ docker run -p 8000:8000  typst_image
 # This command creates a docker container based on the image created at the last step
 ```
 
-Send `test.typ` to the api and output the file to `result.pdf`:
-
-```shell
-curl -H "Content-Type:text/plain" --data-binary @test.typ  http://localhost:8000 --output result.pdf
-```
-
-Or more simply use [httpie](https://httpie.io/cli):
-
-```shell
-cat test.typ | http POST http://localhost:8000 > result.pdf
-```
-
-- If the compilation succeeds, you will get a response with an HTTP code `200`.
-The body of the response will contain the pdf document.
-- On an invalid input you will get a JSON containing the error returned by the compiler with an HTTP code `422 Unprocessable Content`.
-
-    ```json
-    {
-    "error": "compile error: 16:21 expected length, found string"
-    }
-    ```
+[^1]: error example: `{"reason":"compilation error", "content": "raw error log here"}`
