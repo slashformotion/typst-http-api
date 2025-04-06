@@ -24,14 +24,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push the image
-        run: |
-          docker build . --tag ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
-          docker push ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
-
       - name: Build and push latest tag on main branch tag
         if: github.ref == 'refs/tags/v*'
         run: |
-          docker build . --tag ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
-          docker push ghcr.io/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+          docker build . --tag ghcr.io/slashformotion/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
+          docker push ghcr.io/slashformotion/typst-http-api:${{ steps.extract_tag.outputs.TAG_NAME }}
 
