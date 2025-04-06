@@ -55,7 +55,7 @@ services:
 
 ### Rate limiting
 
-You can enable IP based rate limiting with the following environement variable : `TYPST_HTTP_API_REQUESTS_PER_MINUTES`. Must be an uint32 > 0, it will define the number of requests per minute.
+You can enable IP based rate limiting with the following environment variable : `TYPST_HTTP_API_REQUESTS_PER_MINUTES`. Must be an uint32 > 0, it will define the number of requests per minute.
 
 If not defined, rate limiting is disabled.
 
