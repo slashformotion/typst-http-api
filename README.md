@@ -1,5 +1,7 @@
 # Typst HTTP API
 
+>> NOTE: We are not maintaining this project anymore, please do not use it in production.
+
 ***Compile typst documents with a simple HTTP request.***
 
 <!-- This sentence is from the typst repo -->
